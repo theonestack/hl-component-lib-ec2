@@ -1,0 +1,9 @@
+language: ruby
+rvm:
+  - 2.5
+install:
+  - gem install cfhighlander
+before_script:
+  - cfndsl -u 9.0.0
+script:
+  - cfhighlander cftest --no-validate
