@@ -18,7 +18,17 @@ def generate_security_group_rules(security_group_rules,ip_blocks={})
     if ips.any?
       ips.each do |ip|
         ip_sg_rule = sg_rule.clone
-        ip_sg_rule[:CidrIp] = FnSub("#{ip}")
+
+        if ip.is_a?(Hash) && ip.has_key?('ip')
+          ip_sg_rule[:CidrIp] = FnSub("#{ip['ip']}")
+          ip_sg_rule[:Description] = FnSub(ip['desc']) if ip.has_key?('desc')
+        elsif ip.is_a?(String)
+          ip_sg_rule[:CidrIp] = FnSub("#{ip}")
+        else
+          puts "Cannot attach ip to security group, incorrect format #{ip.is_a?(Hash)}"
+          next
+        end
+
         rules.push(ip_sg_rule)
       end
     end
