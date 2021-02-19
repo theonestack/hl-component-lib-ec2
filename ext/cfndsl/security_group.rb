@@ -1,4 +1,4 @@
-def generate_security_group_rules(security_group_rules,ip_blocks={})
+def generate_security_group_rules(security_group_rules,ip_blocks={},ingress=true)
   rules = []
   security_group_rules.each do |rule|
     ips = []
@@ -35,7 +35,21 @@ def generate_security_group_rules(security_group_rules,ip_blocks={})
     
     if rule.has_key?('security_group_id')
       id_sg_rule = sg_rule.clone
-      id_sg_rule[:SourceSecurityGroupId] = FnSub(rule['security_group_id'])
+      if ingress
+        id_sg_rule[:SourceSecurityGroupId] = FnSub(rule['security_group_id'])
+      else
+        id_sg_rule[:DestinationSecurityGroupId] = FnSub(rule['security_group_id'])
+      end
+      rules.push(id_sg_rule)
+    end
+
+    if rule.has_key?('prefix_list')
+      id_sg_rule = sg_rule.clone
+      if ingress
+        id_sg_rule[:SourcePrefixListId] = FnSub(rule['prefix_list'])
+      else
+        id_sg_rule[:DestinationPrefixListId] = FnSub(rule['prefix_list'])
+      end
       rules.push(id_sg_rule)
     end
     
