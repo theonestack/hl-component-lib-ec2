@@ -46,9 +46,9 @@ def generate_security_group_rules(security_group_rules,ip_blocks={},ingress=true
     if rule.has_key?('prefix_list')
       id_sg_rule = sg_rule.clone
       if ingress
-        id_sg_rule[:SourcePrefixListId] = FnSub(rule['prefix_list'])
+        id_sg_rule[:SourcePrefixListId] = rule['prefix_list']
       else
-        id_sg_rule[:DestinationPrefixListId] = FnSub(rule['prefix_list'])
+        id_sg_rule[:DestinationPrefixListId] = rule['prefix_list']
       end
       rules.push(id_sg_rule)
     end
