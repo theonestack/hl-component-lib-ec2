@@ -1,9 +1,0 @@
-language: ruby
-rvm:
-  - 2.5
-install:
-  - gem install cfhighlander rspec
-before_script:
-  - cfndsl -u 9.0.0
-script:
-  - rspec
