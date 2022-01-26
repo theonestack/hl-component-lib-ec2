@@ -57,3 +57,35 @@ def generate_security_group_rules(security_group_rules,ip_blocks={},ingress=true
 
   return rules
 end
+
+def create_security_group(name, vpc_id, description,ingress_rules=[], export_name=nil)
+  EC2_SecurityGroup(name) do
+    VpcId vpc_id
+    GroupDescription description
+    Metadata({
+      cfn_nag: {
+        rules_to_suppress: [
+          { id: 'F1000', reason: 'ignore egress for now' }
+        ]
+      }
+    })
+  end
+  Output(name) do
+    Value(Ref(name))
+    Export FnSub(export_name) unless export_name.nil?
+  end
+  ingress_rules.each_with_index do |ingress_rule, i|
+    EC2_SecurityGroupIngress("#{name}IngressRule#{i+1}") do
+      Description ingress_rule['desc'] if ingress_rule.has_key?('desc')
+      if ingress_rule.has_key?('cidr')
+        CidrIp ingress_rule['cidr']
+      else
+        SourceSecurityGroupId ingress_rule.has_key?('source_sg') ? ingress_rule['source_sg'] :  Ref(name)
+      end
+      GroupId ingress_rule.has_key?('dest_sg') ? ingress_rule['dest_sg'] : Ref(name)
+      IpProtocol ingress_rule.has_key?('protocol') ? ingress_rule['protocol'] : 'tcp'
+      FromPort ingress_rule['from']
+      ToPort ingress_rule.has_key?('to') ? ingress_rule['to'] : ingress_rule['from']
+    end
+  end
+end
